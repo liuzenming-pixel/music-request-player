@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>点歌台</title>
+  <link rel="stylesheet" href="/src/request.css">
+</head>
+<body>
+  <div id="bg-canvas"></div>
+  <div id="app">
+    <!-- 左栏: 热搜 -->
+    <div id="left-col">
+      <div id="hot-header">热搜</div>
+      <div id="hot-list"></div>
+    </div>
+
+    <!-- 中栏: 搜索 -->
+    <div id="center-col">
+      <div id="search-bar">
+        <input id="search-input" type="text" placeholder="搜索歌曲...">
+        <button id="search-btn">搜索</button>
+      </div>
+      <div id="search-results"></div>
+    </div>
+
+    <!-- 右栏: 播放列表 -->
+    <div id="right-col">
+      <div id="queue-header">
+        <span>播放列表</span>
+        <span id="queue-count">0</span>
+      </div>
+      <div id="queue-body">
+        <div id="queue-empty">♪ 暂无歌曲</div>
+        <ol id="queue-list" class="hidden"></ol>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/request.ts"></script>
+</body>
+</html>
