@@ -87,10 +87,10 @@ body{
 #search-btn{
   padding:7px 18px;border:none;border-radius:20px;
   cursor:pointer;font-size:12px;font-weight:500;
-  background:rgba(200,169,81,.2);color:#C8A951;
+  background:rgba(255,255,255,.06);color:rgba(255,255,255,.45);
   transition:all.12s;white-space:nowrap;
 }
-#search-btn:hover{background:rgba(200,169,81,.3);color:#ffd700}
+#search-btn:hover{background:rgba(255,255,255,.1);color:#fff}
 
 /* Clear button (×) */
 #search-clear{
