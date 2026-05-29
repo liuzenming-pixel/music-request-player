@@ -4,9 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>点歌台</title>
-  <script type="module" crossorigin src="./assets/request-DgLP8Upo.js"></script>
+  <script type="module" crossorigin src="./assets/request-B14cwMtJ.js"></script>
   <link rel="modulepreload" crossorigin href="./assets/amll-core-BT0yOS92.js">
-  <link rel="stylesheet" crossorigin href="./assets/request-BDXvC7Pj.css">
+  <link rel="stylesheet" crossorigin href="./assets/request-Dc-sk0_x.css">
 </head>
 <body>
   <div id="bg-canvas"></div>
@@ -14,7 +14,7 @@
     <!-- 左栏: 热搜 -->
     <div id="left-col">
       <div id="hot-header">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
         <span>热搜</span>
       </div>
       <div id="hot-list"></div>
@@ -24,7 +24,7 @@
     <div id="center-col">
       <div id="search-bar">
         <div id="search-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="7.5"/><line x1="16" y1="16" x2="22" y2="22"/></svg>
         </div>
         <input id="search-input" type="text" placeholder="搜索歌曲...">
         <button id="search-btn">搜索</button>
@@ -35,7 +35,7 @@
     <!-- 右栏: 播放列表 -->
     <div id="right-col">
       <div id="queue-header">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="4" cy="6" r="1.5" fill="currentColor" stroke="none"/><circle cx="4" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="4" cy="18" r="1.5" fill="currentColor" stroke="none"/><line x1="9" y1="6" x2="21" y2="6"/><line x1="9" y1="12" x2="21" y2="12"/><line x1="9" y1="18" x2="21" y2="18"/></svg>
         <span>播放列表</span>
         <span id="queue-count">0</span>
       </div>
@@ -48,6 +48,19 @@
       </div>
     </div>
   </div>
+
+  <!-- Mobile Tab Bar -->
+  <nav id="mobile-tabs">
+    <div id="tab-indicator"></div>
+    <button class="tab-btn active" data-tab="center-col">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 17V5l12-2v12"/><circle cx="6" cy="17" r="2.5"/><circle cx="18" cy="15" r="2.5"/></svg>
+      <span>点歌</span>
+    </button>
+    <button class="tab-btn" data-tab="right-col">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="4" cy="6" r="1.5" fill="currentColor" stroke="none"/><circle cx="4" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="4" cy="18" r="1.5" fill="currentColor" stroke="none"/><line x1="9" y1="6" x2="21" y2="6"/><line x1="9" y1="12" x2="21" y2="12"/><line x1="9" y1="18" x2="21" y2="18"/></svg>
+      <span>播放列表</span>
+    </button>
+  </nav>
 
 </body>
 </html>

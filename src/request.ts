@@ -148,8 +148,22 @@ searchInput.addEventListener('focus', () => {
   if (!searchInput.value.trim()) renderLanding();
 });
 searchInput.addEventListener('input', () => {
+  toggleClearBtn();
   if (!searchInput.value.trim()) renderLanding();
 });
+
+// --- Clear Button (×) ---
+const searchClear = document.getElementById('search-clear') as HTMLButtonElement;
+function toggleClearBtn() {
+  searchClear.classList.toggle('hidden', !searchInput.value.trim());
+}
+searchClear.addEventListener('click', () => {
+  searchInput.value = '';
+  searchInput.focus();
+  toggleClearBtn();
+  renderLanding();
+});
+toggleClearBtn();
 
 // --- Add to Queue ---
 (window as any).addToQueue = async (btn: HTMLButtonElement) => {

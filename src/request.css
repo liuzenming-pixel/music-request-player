@@ -92,6 +92,15 @@ body{
 }
 #search-btn:hover{background:rgba(200,169,81,.3);color:#ffd700}
 
+/* Clear button (×) */
+#search-clear{
+  background:none;border:none;
+  color:rgba(255,255,255,.2);font-size:13px;font-weight:300;
+  cursor:pointer;padding:6px 4px;flex-shrink:0;line-height:1;
+  transition:color.12s;display:flex;align-items:center;justify-content:center;
+}
+#search-clear:hover{color:rgba(255,255,255,.5)}
+
 #search-results{
   flex:1;overflow-y:auto;min-height:0;
 }
