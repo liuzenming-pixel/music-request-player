@@ -232,11 +232,14 @@ const tabIndicator = document.getElementById('tab-indicator');
 
 function moveIndicator(btn: HTMLElement) {
   if (!tabIndicator || !mobileTabs) return;
-  const containerRect = mobileTabs.getBoundingClientRect();
   const btnRect = btn.getBoundingClientRect();
+  const containerRect = mobileTabs.getBoundingClientRect();
   const offsetX = btnRect.left - containerRect.left;
-  // +6px padding from container edge for visual balance
-  tabIndicator.style.left = (offsetX + 6) + 'px';
+  const btnWidth = btnRect.width;
+  const inset = 6;
+  // Calculate left and width to fit inside the button with inset on both sides
+  tabIndicator.style.left = (offsetX + inset) + 'px';
+  tabIndicator.style.width = (btnWidth - inset * 2) + 'px';
 }
 
 if (mobileTabs) {
