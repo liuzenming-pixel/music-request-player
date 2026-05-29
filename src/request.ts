@@ -15,13 +15,14 @@ const bgCanvas = document.getElementById('bg-canvas')!;
 const bgRender = BackgroundRender.new(PixiRenderer);
 bgCanvas.appendChild(bgRender.getElement());
 bgRender.setFlowSpeed(5);
-// Use a default gradient since there's no album art on the request page
+// Use a dreamy pink-white gradient background
 bgRender.setAlbum('data:image/svg+xml;base64,' + btoa(
   '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400">' +
   '<defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">' +
-  '<stop offset="0%" style="stop-color:#1a1a2e"/>' +
-  '<stop offset="50%" style="stop-color:#16213e"/>' +
-  '<stop offset="100%" style="stop-color:#0f3460"/>' +
+  '<stop offset="0%" style="stop-color:#ffe4ec"/>' +
+  '<stop offset="40%" style="stop-color:#ffb8d0"/>' +
+  '<stop offset="70%" style="stop-color:#ffd9e8"/>' +
+  '<stop offset="100%" style="stop-color:#fff0f5"/>' +
   '</linearGradient></defs>' +
   '<rect width="400" height="400" fill="url(#g)"/>' +
   '</svg>'
@@ -131,12 +132,97 @@ async function pollQueue() {
       '<li class="queue-item">' +
       '<img src="' + esc(s.picUrl || '') + '" onerror="this.style.display=\'none\'">' +
       '<div class="qi-info"><div class="qi-name">' + esc(s.name) + '</div>' +
-      '<div class="qi-artist">' + esc(s.artist) + '</div></div></li>'
+      '<div class="qi-artist">' + esc(s.artist) + '</div></div>' +
+      '<div class="qi-actions"><button class="qi-btn pin" data-id="' + s.id + '" onclick="window.moveTop(this)">↑</button>' +
+      '<button class="qi-btn del" data-id="' + s.id + '" onclick="window.removeSong(this)">×</button></div></li>'
     ).join('');
   } catch {}
 }
+
+// --- Queue Actions ---
+(window as any).moveTop = async (btn: HTMLButtonElement) => {
+  const id = btn.dataset.id;
+  if (!id) return;
+  await fetch('/api/queue/move', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id, direction: 'top' }),
+  });
+  pollQueue();
+};
+(window as any).removeSong = async (btn: HTMLButtonElement) => {
+  const id = btn.dataset.id;
+  if (!id) return;
+  await fetch('/api/queue/remove', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id }),
+  });
+  pollQueue();
+};
 
 // --- Init ---
 loadHotSearch();
 pollQueue();
 setInterval(pollQueue, 5000);
+
+// --- Mobile Tab Switching ---
+const mobileTabs = document.getElementById('mobile-tabs');
+if (mobileTabs) {
+  // On load: set default active tab based on screen width
+  function initMobileTabs() {
+    const isMobile = window.innerWidth < 720;
+    if (isMobile) {
+      // 点歌 tab (center-col) active by default
+      const defaultBtn = mobileTabs.querySelector('.tab-btn[data-tab="center-col"]') as HTMLButtonElement;
+      if (defaultBtn) {
+        mobileTabs.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        defaultBtn.classList.add('active');
+      }
+      document.querySelectorAll('#center-col, #right-col').forEach(col => {
+        col.classList.remove('tab-active');
+      });
+      document.getElementById('center-col')?.classList.add('tab-active');
+    }
+  }
+  initMobileTabs();
+
+  mobileTabs.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest('.tab-btn') as HTMLButtonElement;
+    if (!btn) return;
+    const tab = btn.dataset.tab;
+    if (!tab) return;
+
+    // Update active state on tab buttons
+    mobileTabs.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    // Toggle columns
+    document.querySelectorAll('#center-col, #right-col').forEach(col => {
+      col.classList.toggle('tab-active', col.id === tab);
+    });
+  });
+
+  // Re-check on resize (mobile <-> desktop switch)
+  let resizeTimer: number;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = window.setTimeout(() => {
+      const isMobile = window.innerWidth < 720;
+      if (isMobile) {
+        // Ensure exactly one tab is active
+        const activeBtn = mobileTabs.querySelector('.tab-btn.active') as HTMLButtonElement;
+        const activeTab = activeBtn?.dataset.tab || 'center-col';
+        document.querySelectorAll('#center-col, #right-col').forEach(col => {
+          col.classList.toggle('tab-active', col.id === activeTab);
+        });
+      } else {
+        // On desktop: both columns visible, remove tab-active
+        document.querySelectorAll('#center-col, #right-col').forEach(col => {
+          col.classList.remove('tab-active');
+          col.removeAttribute('style');
+        });
+      }
+    }, 200);
+  });
+}

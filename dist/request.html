@@ -4,22 +4,28 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>点歌台</title>
-  <script type="module" crossorigin src="./assets/request-DWZdqA_k.js"></script>
+  <script type="module" crossorigin src="./assets/request-DgLP8Upo.js"></script>
   <link rel="modulepreload" crossorigin href="./assets/amll-core-BT0yOS92.js">
-  <link rel="stylesheet" crossorigin href="./assets/request-CfCAVz-I.css">
+  <link rel="stylesheet" crossorigin href="./assets/request-BDXvC7Pj.css">
 </head>
 <body>
   <div id="bg-canvas"></div>
   <div id="app">
     <!-- 左栏: 热搜 -->
     <div id="left-col">
-      <div id="hot-header">热搜</div>
+      <div id="hot-header">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+        <span>热搜</span>
+      </div>
       <div id="hot-list"></div>
     </div>
 
     <!-- 中栏: 搜索 -->
     <div id="center-col">
       <div id="search-bar">
+        <div id="search-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </div>
         <input id="search-input" type="text" placeholder="搜索歌曲...">
         <button id="search-btn">搜索</button>
       </div>
@@ -29,11 +35,15 @@
     <!-- 右栏: 播放列表 -->
     <div id="right-col">
       <div id="queue-header">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
         <span>播放列表</span>
         <span id="queue-count">0</span>
       </div>
       <div id="queue-body">
-        <div id="queue-empty">♪ 暂无歌曲</div>
+        <div id="queue-empty">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:.3;margin-bottom:4px"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+          <div>暂无歌曲</div>
+        </div>
         <ol id="queue-list" class="hidden"></ol>
       </div>
     </div>

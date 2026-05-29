@@ -69,23 +69,23 @@ async function playSong(song: any) {
   // Lyrics
   loadLyrics(song.id);
 
-  // Song URL
-  try {
-    const r = await (await fetch('/api/song/url?id=' + song.id + '&level=excellent')).json();
-    let url = '';
-    if (r.code === 200) {
-      const d = r.data || [];
-      if (Array.isArray(d) && d[0]) url = d[0].url || '';
-      else if (d.url) url = d.url;
-    }
-    if (url) {
-      audio.src = url;
-      const pp = audio.play();
-      if (pp) pp.catch(() => { songTitle.textContent = song.name; });
-    } else {
-      songTitle.textContent = song.name;
-    }
-  } catch {
+  // Song URL - use playUrl if already provided (from /api/queue/next), otherwise fetch
+  let url = song.playUrl || '';
+  if (!url) {
+    try {
+      const r = await (await fetch('/api/song/url?id=' + song.id + '&level=excellent')).json();
+      if (r.code === 200) {
+        const d = r.data || [];
+        if (Array.isArray(d) && d[0]) url = d[0].url || '';
+        else if (d.url) url = d.url;
+      }
+    } catch {}
+  }
+  if (url) {
+    audio.src = url;
+    const pp = audio.play();
+    if (pp) pp.catch(() => { songTitle.textContent = song.name; });
+  } else {
     songTitle.textContent = song.name;
   }
 
@@ -324,7 +324,7 @@ async function init() {
   await updateLoginStatus();
   try {
     const d = await (await fetch('/api/queue/next')).json();
-    if (d.code === 200 && d.data && d.data.playUrl) {
+    if (d.code === 200 && d.data) {
       await playSong(d.data);
     }
   } catch {}
@@ -332,13 +332,16 @@ async function init() {
 init();
 
 // --- Audio Events ---
+audio.addEventListener('loadedmetadata', () => {
+  if (audio.duration && isFinite(audio.duration)) {
+    timeTotal.textContent = fmt(audio.duration);
+  }
+});
 audio.addEventListener('timeupdate', () => {
-  if (audio.duration) {
+  if (audio.duration && isFinite(audio.duration)) {
     progressFill.style.width = (audio.currentTime / audio.duration * 100) + '%';
     timeCurrent.textContent = fmt(audio.currentTime);
     timeTotal.textContent = fmt(audio.duration);
-    // Update AMLL lyric player
-    lyricPlayer.setCurrentTime(audio.currentTime * 1000);
   }
 });
 audio.addEventListener('play', updatePlayBtn);
