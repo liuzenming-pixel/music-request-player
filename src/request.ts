@@ -235,8 +235,8 @@ function moveIndicator(btn: HTMLElement) {
   const containerRect = mobileTabs.getBoundingClientRect();
   const btnRect = btn.getBoundingClientRect();
   const offsetX = btnRect.left - containerRect.left;
-  // Set left directly; CSS transition on 'left' handles animation
-  tabIndicator.style.left = offsetX + 'px';
+  // +6px padding from container edge for visual balance
+  tabIndicator.style.left = (offsetX + 6) + 'px';
 }
 
 if (mobileTabs) {
