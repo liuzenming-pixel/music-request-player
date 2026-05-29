@@ -14,15 +14,15 @@ const queueCount = $('queue-count');
 const bgCanvas = document.getElementById('bg-canvas')!;
 const bgRender = BackgroundRender.new(PixiRenderer);
 bgCanvas.appendChild(bgRender.getElement());
-bgRender.setFlowSpeed(5);
-// Use a dreamy pink-white gradient background
+bgRender.setFlowSpeed(4);
+// Klein Blue gradient -- dynamic fluid background
 bgRender.setAlbum('data:image/svg+xml;base64,' + btoa(
   '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400">' +
   '<defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">' +
-  '<stop offset="0%" style="stop-color:#ffe4ec"/>' +
-  '<stop offset="40%" style="stop-color:#ffb8d0"/>' +
-  '<stop offset="70%" style="stop-color:#ffd9e8"/>' +
-  '<stop offset="100%" style="stop-color:#fff0f5"/>' +
+  '<stop offset="0%" style="stop-color:#0a1628"/>' +
+  '<stop offset="35%" style="stop-color:#002FA7"/>' +
+  '<stop offset="65%" style="stop-color:#001a6e"/>' +
+  '<stop offset="100%" style="stop-color:#0d1b4a"/>' +
   '</linearGradient></defs>' +
   '<rect width="400" height="400" fill="url(#g)"/>' +
   '</svg>'
@@ -44,12 +44,28 @@ function esc(s: string): string {
   return d.innerHTML;
 }
 
+// --- Search History (localStorage) ---
+function getHistory(): string[] {
+  try { return JSON.parse(localStorage.getItem('reqSearchHist') || '[]'); }
+  catch { return []; }
+}
+function addHistory(keyword: string) {
+  const hist = getHistory().filter(h => h !== keyword);
+  hist.unshift(keyword);
+  localStorage.setItem('reqSearchHist', JSON.stringify(hist.slice(0, 10)));
+}
+function clearHistory() {
+  localStorage.removeItem('reqSearchHist');
+}
+
 // --- Hot Search ---
+let hotItems: any[] = [];
 async function loadHotSearch() {
   try {
     const d = await (await fetch('/api/search/hot')).json();
-    const items = d.result?.hots || d.data || [];
-    hotList.innerHTML = items.map((h: any, i: number) => {
+    hotItems = d.result?.hots || d.data || [];
+    // Render left sidebar hot list
+    hotList.innerHTML = hotItems.map((h: any, i: number) => {
       const rank = i + 1;
       const rankClass = rank <= 3 ? ' t' + rank : '';
       const name = h.first || h.searchWord || '';
@@ -57,11 +73,49 @@ async function loadHotSearch() {
         '<span class="rk' + rankClass + '">' + rank + '</span>' +
         '<span class="ht-name">' + esc(name) + '</span></div>';
     }).join('');
+    // Also render landing content
+    renderLanding();
   } catch {}
 }
 (window as any).addHot = async (keyword: string) => {
   searchInput.value = keyword;
+  addHistory(keyword);
   await doSearch(keyword);
+};
+
+// --- Landing Content (hot + history) ---
+function renderLanding() {
+  const hist = getHistory();
+  const hotHtml = hotItems.map((h: any, i: number) => {
+    const rank = i + 1;
+    const name = h.first || h.searchWord || '';
+    const rankClass = rank <= 3 ? ' t' + rank : '';
+    const heat = h.score || h.hot || 0;
+    return '<div class="hot-item" onclick="window.addHot(\'' + esc(name) + '\')">' +
+      '<span class="rk' + rankClass + '">' + rank + '</span>' +
+      '<span class="ht-name">' + esc(name) + '</span>' +
+      (heat ? '<span class="landing-heat">' + heat + '</span>' : '') +
+      '</div>';
+  }).join('');
+
+  const historyHtml = hist.length > 0
+    ? '<div class="landing-section" id="history-section">' +
+      '<div class="landing-header"><span>搜索历史</span>' +
+      '<button class="clear-hist" onclick="window.clearHist()">清除</button></div>' +
+      '<div class="history-tags">' +
+      hist.map(k => '<span class="history-tag" onclick="window.addHot(\'' + esc(k) + '\')">' + esc(k) + '</span>').join('') +
+      '</div></div>'
+    : '';
+
+  searchResults.innerHTML =
+    '<div class="landing-content">' + historyHtml +
+    '<div class="landing-section">' +
+    '<div class="landing-header">热搜榜</div>' +
+    '<div id="landing-hot-list">' + hotHtml + '</div></div></div>';
+}
+(window as any).clearHist = () => {
+  clearHistory();
+  renderLanding();
 };
 
 // --- Search ---
@@ -90,6 +144,12 @@ async function doSearch(keyword: string) {
 
 searchBtn.addEventListener('click', () => doSearch(searchInput.value));
 searchInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') doSearch(searchInput.value); });
+searchInput.addEventListener('focus', () => {
+  if (!searchInput.value.trim()) renderLanding();
+});
+searchInput.addEventListener('input', () => {
+  if (!searchInput.value.trim()) renderLanding();
+});
 
 // --- Add to Queue ---
 (window as any).addToQueue = async (btn: HTMLButtonElement) => {
