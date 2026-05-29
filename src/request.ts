@@ -168,6 +168,18 @@ setInterval(pollQueue, 5000);
 
 // --- Mobile Tab Switching ---
 const mobileTabs = document.getElementById('mobile-tabs');
+const tabIndicator = document.getElementById('tab-indicator');
+
+function moveIndicator(btn: HTMLElement) {
+  if (!tabIndicator || !mobileTabs) return;
+  const containerRect = mobileTabs.getBoundingClientRect();
+  const btnRect = btn.getBoundingClientRect();
+  const offsetX = btnRect.left - containerRect.left;
+  // Position indicator to align with the button's center
+  // Use translateX so CSS transition animates smoothly
+  tabIndicator.style.transform = `translateX(${offsetX}px)`;
+}
+
 if (mobileTabs) {
   // On load: set default active tab based on screen width
   function initMobileTabs() {
@@ -178,6 +190,7 @@ if (mobileTabs) {
       if (defaultBtn) {
         mobileTabs.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         defaultBtn.classList.add('active');
+        moveIndicator(defaultBtn);
       }
       document.querySelectorAll('#center-col, #right-col').forEach(col => {
         col.classList.remove('tab-active');
@@ -196,6 +209,7 @@ if (mobileTabs) {
     // Update active state on tab buttons
     mobileTabs.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
+    moveIndicator(btn);
 
     // Toggle columns
     document.querySelectorAll('#center-col, #right-col').forEach(col => {
@@ -212,6 +226,7 @@ if (mobileTabs) {
       if (isMobile) {
         // Ensure exactly one tab is active
         const activeBtn = mobileTabs.querySelector('.tab-btn.active') as HTMLButtonElement;
+        if (activeBtn) moveIndicator(activeBtn);
         const activeTab = activeBtn?.dataset.tab || 'center-col';
         document.querySelectorAll('#center-col, #right-col').forEach(col => {
           col.classList.toggle('tab-active', col.id === activeTab);
