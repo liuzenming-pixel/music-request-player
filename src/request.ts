@@ -235,9 +235,8 @@ function moveIndicator(btn: HTMLElement) {
   const containerRect = mobileTabs.getBoundingClientRect();
   const btnRect = btn.getBoundingClientRect();
   const offsetX = btnRect.left - containerRect.left;
-  // Position indicator to align with the button's center
-  // Use translateX so CSS transition animates smoothly
-  tabIndicator.style.transform = `translateX(${offsetX}px)`;
+  // Set left directly; CSS transition on 'left' handles animation
+  tabIndicator.style.left = offsetX + 'px';
 }
 
 if (mobileTabs) {

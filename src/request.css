@@ -265,11 +265,11 @@ body{
   /* Sliding indicator pill */
   #tab-indicator{
     position:absolute;top:6px;bottom:6px;
-    width:calc(50% - 8px);left:6px;
+    width:calc(50% - 8px);
     border-radius:22px;
     background:linear-gradient(135deg,rgba(200,169,81,.25),rgba(200,169,81,.08));
     border:1px solid rgba(255,255,255,.04);
-    transition:transform .38s cubic-bezier(.22,.68,0,1);
+    transition:left .38s cubic-bezier(.22,.68,0,1);
     pointer-events:none;
     box-shadow:inset 0 0 0 1px rgba(255,255,255,.02);
   }
