@@ -25,9 +25,9 @@ body{
   border-right:1px solid rgba(255,255,255,.04);
 }
 #hot-header{
-  display:flex;align-items:center;gap:6px;
-  padding:16px 18px 12px;
-  font-size:13px;font-weight:600;color:rgba(255,215,0,.5);
+  display:flex;align-items:center;gap:8px;
+  padding:18px 20px 14px;
+  font-size:17px;font-weight:600;color:rgba(255,215,0,.5);
   border-bottom:1px solid rgba(255,215,0,.08);
 }
 #hot-header svg{opacity:.6;color:rgba(255,215,0,.6)}
@@ -38,14 +38,14 @@ body{
 #hot-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,.04);border-radius:2px}
 
 .hot-item{
-  display:flex;align-items:center;gap:10px;
-  padding:8px 12px;border-radius:6px;
+  display:flex;align-items:center;gap:13px;
+  padding:10px 16px;border-radius:8px;
   cursor:pointer;transition:all.1s;
-  color:rgba(255,255,255,.4);font-size:13px;
+  color:rgba(255,255,255,.4);font-size:17px;
 }
 .hot-item:hover{background:rgba(255,255,255,.03);color:#fff}
 .hot-item .rk{
-  font-size:11px;font-weight:700;min-width:18px;
+  font-size:14px;font-weight:700;min-width:24px;
   color:rgba(255,255,255,.15);text-align:center;
 }
 .hot-item .rk.t1{color:#C8A951}
@@ -149,24 +149,24 @@ body{
 .landing-section{margin-bottom:20px}
 .landing-header{
   display:flex;align-items:center;justify-content:space-between;
-  padding:2px 6px 10px;
-  font-size:12px;font-weight:600;color:rgba(200,169,81,.6);
+  padding:2px 8px 12px;
+  font-size:16px;font-weight:600;color:rgba(200,169,81,.6);
   letter-spacing:.04em;
 }
 .landing-header .clear-hist{
-  font-size:10px;font-weight:400;color:rgba(255,255,255,.15);
+  font-size:13px;font-weight:400;color:rgba(255,255,255,.15);
   cursor:pointer;background:none;border:none;padding:0;
   transition:color.1s;
 }
 .landing-header .clear-hist:hover{color:rgba(255,255,255,.4)}
 .history-tags{
-  display:flex;flex-wrap:wrap;gap:6px;padding:0 4px;
+  display:flex;flex-wrap:wrap;gap:8px;padding:0 6px;
 }
 .history-tag{
-  padding:5px 12px;border-radius:14px;
+  padding:7px 16px;border-radius:18px;
   background:rgba(255,255,255,.04);
   border:1px solid rgba(255,255,255,.04);
-  font-size:11px;color:rgba(255,255,255,.3);
+  font-size:14px;color:rgba(255,255,255,.3);
   cursor:pointer;transition:all.12s;
 }
 .history-tag:hover{
@@ -179,8 +179,8 @@ body{
   color:rgba(255,255,255,.08);
 }
 #landing-hot-list .hot-item{
-  padding:6px 10px;
-  font-size:13px;
+  padding:8px 13px;
+  font-size:17px;
 }
 
 /* === Right Column: Queue === */
@@ -191,16 +191,16 @@ body{
   border-left:1px solid rgba(255,255,255,.04);
 }
 #queue-header{
-  display:flex;align-items:center;gap:6px;
+  display:flex;align-items:center;gap:8px;
   justify-content:flex-start;
-  padding:14px 16px 10px;
+  padding:16px 20px 12px;
   border-bottom:1px solid rgba(255,255,255,.04);
-  font-size:13px;font-weight:600;color:rgba(255,255,255,.3);
+  font-size:17px;font-weight:600;color:rgba(255,255,255,.3);
 }
 #queue-header svg{opacity:.4}
 #queue-header #queue-count{
   margin-left:auto;
-  font-size:11px;color:rgba(255,255,255,.15);
+  font-size:14px;color:rgba(255,255,255,.15);
   font-weight:400;
 }
 #queue-body{flex:1;overflow-y:auto;min-height:0}
@@ -209,34 +209,34 @@ body{
 
 #queue-empty{
   text-align:center;padding:40px 10px;
-  color:rgba(255,255,255,.08);font-size:12px;
+  color:rgba(255,255,255,.08);font-size:16px;
 }
 #queue-empty svg{display:block;margin:0 auto 4px;opacity:.3}
 #queue-list{list:none;padding:0}
 .queue-item{
-  display:flex;align-items:center;gap:8px;
-  padding:7px 14px;
+  display:flex;align-items:center;gap:10px;
+  padding:9px 18px;
   border-bottom:1px solid rgba(255,255,255,.02);
   transition:background.1s;
 }
 .queue-item:hover{background:rgba(255,255,255,.02)}
 .queue-item img{
-  width:28px;height:28px;border-radius:4px;object-fit:cover;flex-shrink:0;
+  width:36px;height:36px;border-radius:5px;object-fit:cover;flex-shrink:0;
 }
 .queue-item .qi-info{flex:1;min-width:0;overflow:hidden}
 .queue-item .qi-name{
-  font-size:12px;font-weight:500;color:rgba(255,255,255,.6);
+  font-size:16px;font-weight:500;color:rgba(255,255,255,.6);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
 }
 .queue-item .qi-artist{
-  font-size:11px;color:rgba(255,255,255,.2);
+  font-size:14px;color:rgba(255,255,255,.2);margin-top:1px;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
 }
-.qi-actions{display:flex;gap:4px;flex-shrink:0}
+.qi-actions{display:flex;gap:5px;flex-shrink:0}
 .qi-btn{
   background:none;border:1px solid rgba(255,255,255,.08);
   color:rgba(255,255,255,.25);cursor:pointer;
-  font-size:12px;width:24px;height:24px;border-radius:4px;
+  font-size:16px;width:31px;height:31px;border-radius:6px;
   display:flex;align-items:center;justify-content:center;
   transition:all.1s;padding:0;line-height:1;
 }

@@ -3,6 +3,14 @@ import { resolve } from 'path';
 
 export default defineConfig({
   base: './',
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://39.105.51.114:5123',
+        changeOrigin: true,
+      },
+    },
+  },
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
