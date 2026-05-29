@@ -33,6 +33,18 @@ const bgCanvas = document.getElementById('bg-canvas')!;
 const bgRender = BackgroundRender.new(PixiRenderer);
 bgCanvas.appendChild(bgRender.getElement());
 bgRender.setFlowSpeed(6);
+// Klein Blue gradient background
+bgRender.setAlbum('data:image/svg+xml;base64,' + btoa(
+  '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400">' +
+  '<defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">' +
+  '<stop offset="0%" style="stop-color:#0a1628"/>' +
+  '<stop offset="35%" style="stop-color:#002FA7"/>' +
+  '<stop offset="65%" style="stop-color:#001a6e"/>' +
+  '<stop offset="100%" style="stop-color:#0d1b4a"/>' +
+  '</linearGradient></defs>' +
+  '<rect width="400" height="400" fill="url(#g)"/>' +
+  '</svg>'
+));
 
 // --- Auto-resize bg canvas ---
 function resizeBg() {
