@@ -2,7 +2,6 @@ import { BackgroundRender, PixiRenderer } from '@applemusic-like-lyrics/core';
 
 // --- DOM refs ---
 const $ = (id: string) => document.getElementById(id)!;
-const hotList = $('hot-list');
 const searchInput = $('search-input') as HTMLInputElement;
 const searchBtn = $('search-btn');
 const searchResults = $('search-results');
@@ -19,10 +18,10 @@ bgRender.setFlowSpeed(4);
 bgRender.setAlbum('data:image/svg+xml;base64,' + btoa(
   '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400">' +
   '<defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">' +
-  '<stop offset="0%" style="stop-color:#ffd6e8"/>' +
-  '<stop offset="30%" style="stop-color:#ffadd2"/>' +
-  '<stop offset="65%" style="stop-color:#f890be"/>' +
-  '<stop offset="100%" style="stop-color:#e8a0c8"/>' +
+  '<stop offset="0%" style="stop-color:#1e1b4b"/>' +
+  '<stop offset="30%" style="stop-color:#312e81"/>' +
+  '<stop offset="65%" style="stop-color:#4c1d95"/>' +
+  '<stop offset="100%" style="stop-color:#2e1065"/>' +
   '</linearGradient></defs>' +
   '<rect width="400" height="400" fill="url(#g)"/>' +
   '</svg>'
@@ -64,16 +63,6 @@ async function loadHotSearch() {
   try {
     const d = await (await fetch('/api/search/hot')).json();
     hotItems = d.result?.hots || d.data || [];
-    // Render left sidebar hot list
-    hotList.innerHTML = hotItems.map((h: any, i: number) => {
-      const rank = i + 1;
-      const rankClass = rank <= 3 ? ' t' + rank : '';
-      const name = h.first || h.searchWord || '';
-      return '<div class="hot-item" onclick="window.addHot(\'' + esc(name) + '\')">' +
-        '<span class="rk' + rankClass + '">' + rank + '</span>' +
-        '<span class="ht-name">' + esc(name) + '</span></div>';
-    }).join('');
-    // Also render landing content
     renderLanding();
   } catch {}
 }
@@ -83,20 +72,9 @@ async function loadHotSearch() {
   await doSearch(keyword);
 };
 
-// --- Landing Content (hot + history) ---
+// --- Landing Content (history + hot) ---
 function renderLanding() {
   const hist = getHistory();
-  const hotHtml = hotItems.map((h: any, i: number) => {
-    const rank = i + 1;
-    const name = h.first || h.searchWord || '';
-    const rankClass = rank <= 3 ? ' t' + rank : '';
-    const heat = h.score || h.hot || 0;
-    return '<div class="hot-item" onclick="window.addHot(\'' + esc(name) + '\')">' +
-      '<span class="rk' + rankClass + '">' + rank + '</span>' +
-      '<span class="ht-name">' + esc(name) + '</span>' +
-      (heat ? '<span class="landing-heat">' + heat + '</span>' : '') +
-      '</div>';
-  }).join('');
 
   const historyHtml = hist.length > 0
     ? '<div class="landing-section" id="history-section">' +
@@ -107,11 +85,25 @@ function renderLanding() {
       '</div></div>'
     : '';
 
-  searchResults.innerHTML =
-    '<div class="landing-content">' + historyHtml +
-    '<div class="landing-section">' +
-    '<div class="landing-header">热搜榜</div>' +
-    '<div id="landing-hot-list">' + hotHtml + '</div></div></div>';
+  const hotHtml = hotItems.length > 0
+    ? '<div class="landing-section">' +
+      '<div class="landing-header">热搜榜</div>' +
+      '<div id="landing-hot-list">' +
+      hotItems.map((h: any, i: number) => {
+        const rank = i + 1;
+        const name = h.first || h.searchWord || '';
+        const rankClass = rank <= 3 ? ' t' + rank : '';
+        const heat = h.score || h.hot || 0;
+        return '<div class="hot-item" onclick="window.addHot(\'' + esc(name) + '\')">' +
+          '<span class="rk' + rankClass + '">' + rank + '</span>' +
+          '<span class="ht-name">' + esc(name) + '</span>' +
+          (heat ? '<span class="landing-heat">' + heat + '</span>' : '') +
+          '</div>';
+      }).join('') +
+      '</div></div>'
+    : '';
+
+  searchResults.innerHTML = '<div class="landing-content">' + historyHtml + hotHtml + '</div>';
 }
 (window as any).clearHist = () => {
   clearHistory();
@@ -257,24 +249,14 @@ function moveIndicator(btn: HTMLElement) {
 }
 
 if (mobileTabs) {
-  // On load: set default active tab based on screen width
-  function initMobileTabs() {
-    const isMobile = window.innerWidth < 720;
-    if (isMobile) {
-      // 点歌 tab (center-col) active by default
-      const defaultBtn = mobileTabs.querySelector('.tab-btn[data-tab="center-col"]') as HTMLButtonElement;
-      if (defaultBtn) {
-        mobileTabs.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        defaultBtn.classList.add('active');
-        moveIndicator(defaultBtn);
-      }
-      document.querySelectorAll('#center-col, #right-col').forEach(col => {
-        col.classList.remove('tab-active');
-      });
-      document.getElementById('center-col')?.classList.add('tab-active');
-    }
+  // 初始化：点歌 tab 默认激活
+  const defaultBtn = mobileTabs.querySelector('.tab-btn[data-tab="center-col"]') as HTMLButtonElement;
+  if (defaultBtn) {
+    mobileTabs.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    defaultBtn.classList.add('active');
+    moveIndicator(defaultBtn);
   }
-  initMobileTabs();
+  document.getElementById('center-col')?.classList.add('tab-active');
 
   mobileTabs.addEventListener('click', (e) => {
     const btn = (e.target as HTMLElement).closest('.tab-btn') as HTMLButtonElement;
@@ -293,27 +275,13 @@ if (mobileTabs) {
     });
   });
 
-  // Re-check on resize (mobile <-> desktop switch)
+  // 修正 tab 指示器位置（窗口缩放时）
   let resizeTimer: number;
   window.addEventListener('resize', () => {
     clearTimeout(resizeTimer);
     resizeTimer = window.setTimeout(() => {
-      const isMobile = window.innerWidth < 720;
-      if (isMobile) {
-        // Ensure exactly one tab is active
-        const activeBtn = mobileTabs.querySelector('.tab-btn.active') as HTMLButtonElement;
-        if (activeBtn) moveIndicator(activeBtn);
-        const activeTab = activeBtn?.dataset.tab || 'center-col';
-        document.querySelectorAll('#center-col, #right-col').forEach(col => {
-          col.classList.toggle('tab-active', col.id === activeTab);
-        });
-      } else {
-        // On desktop: both columns visible, remove tab-active
-        document.querySelectorAll('#center-col, #right-col').forEach(col => {
-          col.classList.remove('tab-active');
-          col.removeAttribute('style');
-        });
-      }
+      const activeBtn = mobileTabs.querySelector('.tab-btn.active') as HTMLButtonElement;
+      if (activeBtn) moveIndicator(activeBtn);
     }, 200);
   });
 }
