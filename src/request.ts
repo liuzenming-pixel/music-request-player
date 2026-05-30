@@ -1,4 +1,5 @@
 import { BackgroundRender, PixiRenderer } from '@applemusic-like-lyrics/core';
+import { esc } from './utils';
 
 // --- DOM refs ---
 const $ = (id: string) => document.getElementById(id)!;
@@ -14,7 +15,6 @@ const bgCanvas = document.getElementById('bg-canvas')!;
 const bgRender = BackgroundRender.new(PixiRenderer);
 bgCanvas.appendChild(bgRender.getElement());
 bgRender.setFlowSpeed(4);
-// Klein Blue gradient -- dynamic fluid background
 bgRender.setAlbum('data:image/svg+xml;base64,' + btoa(
   '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400">' +
   '<defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">' +
@@ -27,7 +27,6 @@ bgRender.setAlbum('data:image/svg+xml;base64,' + btoa(
   '</svg>'
 ));
 
-// Auto-resize bg
 function resizeBg() {
   const el = bgRender.getElement();
   el.style.width = '100%';
@@ -36,14 +35,7 @@ function resizeBg() {
 window.addEventListener('resize', resizeBg);
 resizeBg();
 
-// --- Helpers ---
-function esc(s: string): string {
-  const d = document.createElement('div');
-  d.textContent = s;
-  return d.innerHTML;
-}
-
-// --- Search History (localStorage) ---
+// --- Search History ---
 function getHistory(): string[] {
   try { return JSON.parse(localStorage.getItem('reqSearchHist') || '[]'); }
   catch { return []; }
@@ -66,22 +58,26 @@ async function loadHotSearch() {
     renderLanding();
   } catch {}
 }
-(window as any).addHot = async (keyword: string) => {
+
+async function triggerSearch(keyword: string) {
   searchInput.value = keyword;
   addHistory(keyword);
   await doSearch(keyword);
-};
+}
 
 // --- Landing Content (history + hot) ---
+// All interactive items use data-keyword; a single delegated listener handles clicks.
 function renderLanding() {
   const hist = getHistory();
 
   const historyHtml = hist.length > 0
     ? '<div class="landing-section" id="history-section">' +
       '<div class="landing-header"><span>搜索历史</span>' +
-      '<button class="clear-hist" onclick="window.clearHist()">清除</button></div>' +
+      '<button class="clear-hist">清除</button></div>' +
       '<div class="history-tags">' +
-      hist.map(k => '<span class="history-tag" onclick="window.addHot(\'' + esc(k) + '\')">' + esc(k) + '</span>').join('') +
+      hist.map(k =>
+        '<span class="history-tag" data-keyword="' + esc(k) + '">' + esc(k) + '</span>'
+      ).join('') +
       '</div></div>'
     : '';
 
@@ -94,7 +90,7 @@ function renderLanding() {
         const name = h.first || h.searchWord || '';
         const rankClass = rank <= 3 ? ' t' + rank : '';
         const heat = h.score || h.hot || 0;
-        return '<div class="hot-item" onclick="window.addHot(\'' + esc(name) + '\')">' +
+        return '<div class="hot-item" data-keyword="' + esc(name) + '">' +
           '<span class="rk' + rankClass + '">' + rank + '</span>' +
           '<span class="ht-name">' + esc(name) + '</span>' +
           (heat ? '<span class="landing-heat">' + heat + '</span>' : '') +
@@ -105,10 +101,22 @@ function renderLanding() {
 
   searchResults.innerHTML = '<div class="landing-content">' + historyHtml + hotHtml + '</div>';
 }
-(window as any).clearHist = () => {
-  clearHistory();
-  renderLanding();
-};
+
+// Delegated click handler for landing items (safe: no JS string interpolation)
+searchResults.addEventListener('click', async (e) => {
+  const target = e.target as HTMLElement;
+
+  const keywordEl = target.closest('[data-keyword]') as HTMLElement | null;
+  if (keywordEl) {
+    await triggerSearch(keywordEl.dataset.keyword!);
+    return;
+  }
+
+  if (target.closest('.clear-hist')) {
+    clearHistory();
+    renderLanding();
+  }
+});
 
 // --- Search ---
 async function doSearch(keyword: string) {
@@ -127,7 +135,7 @@ async function doSearch(keyword: string) {
         '<div class="si-info">' +
         '<div class="si-name">' + esc(s.name) + '</div>' +
         '<div class="si-artist">' + esc(artist) + '</div></div>' +
-        '<button class="add-btn" data-id="' + s.id + '" data-name="' + esc(s.name) +
+        '<button class="add-btn" data-id="' + esc(String(s.id)) + '" data-name="' + esc(s.name) +
         '" data-artist="' + esc(artist) + '" data-pic="' + esc(s.album?.picUrl || s.picUrl || '') +
         '" onclick="window.addToQueue(this)">+ 点歌</button></div>';
     }).join('');
@@ -136,15 +144,13 @@ async function doSearch(keyword: string) {
 
 searchBtn.addEventListener('click', () => doSearch(searchInput.value));
 searchInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') doSearch(searchInput.value); });
-searchInput.addEventListener('focus', () => {
-  if (!searchInput.value.trim()) renderLanding();
-});
+searchInput.addEventListener('focus', () => { if (!searchInput.value.trim()) renderLanding(); });
 searchInput.addEventListener('input', () => {
   toggleClearBtn();
   if (!searchInput.value.trim()) renderLanding();
 });
 
-// --- Clear Button (×) ---
+// --- Clear Button ---
 const searchClear = document.getElementById('search-clear') as HTMLButtonElement;
 function toggleClearBtn() {
   searchClear.classList.toggle('hidden', !searchInput.value.trim());
@@ -160,10 +166,7 @@ toggleClearBtn();
 // --- Add to Queue ---
 (window as any).addToQueue = async (btn: HTMLButtonElement) => {
   if (btn.classList.contains('done')) return;
-  const id = btn.dataset.id;
-  const name = btn.dataset.name;
-  const artist = btn.dataset.artist;
-  const picUrl = btn.dataset.pic;
+  const { id, name, artist, pic: picUrl } = btn.dataset;
   try {
     const r = await (await fetch('/api/queue/add', {
       method: 'POST',
@@ -173,7 +176,7 @@ toggleClearBtn();
     if (r.code === 200) {
       btn.textContent = '✓';
       btn.classList.add('done');
-      pollQueue();
+      await pollQueue();
     }
   } catch {}
 };
@@ -183,8 +186,7 @@ async function pollQueue() {
   try {
     const d = await (await fetch('/api/queue?_=' + Date.now())).json();
     if (d.code !== 200) return;
-    const q = d.data;
-    const req = q.requests || [];
+    const req = (d.data?.requests || []) as any[];
     queueCount.textContent = String(req.length);
 
     if (req.length === 0) {
@@ -199,8 +201,10 @@ async function pollQueue() {
       '<img src="' + esc(s.picUrl || '') + '" onerror="this.style.display=\'none\'">' +
       '<div class="qi-info"><div class="qi-name">' + esc(s.name) + '</div>' +
       '<div class="qi-artist">' + esc(s.artist) + '</div></div>' +
-      '<div class="qi-actions"><button class="qi-btn pin" data-id="' + s.id + '" onclick="window.moveTop(this)">↑</button>' +
-      '<button class="qi-btn del" data-id="' + s.id + '" onclick="window.removeSong(this)">×</button></div></li>'
+      '<div class="qi-actions">' +
+      '<button class="qi-btn pin" data-id="' + esc(String(s.id)) + '" onclick="window.moveTop(this)">↑</button>' +
+      '<button class="qi-btn del" data-id="' + esc(String(s.id)) + '" onclick="window.removeSong(this)">×</button>' +
+      '</div></li>'
     ).join('');
   } catch {}
 }
@@ -214,7 +218,7 @@ async function pollQueue() {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ id, direction: 'top' }),
   });
-  pollQueue();
+  await pollQueue();
 };
 (window as any).removeSong = async (btn: HTMLButtonElement) => {
   const id = btn.dataset.id;
@@ -224,7 +228,7 @@ async function pollQueue() {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ id }),
   });
-  pollQueue();
+  await pollQueue();
 };
 
 // --- Init ---
@@ -240,16 +244,12 @@ function moveIndicator(btn: HTMLElement) {
   if (!tabIndicator || !mobileTabs) return;
   const btnRect = btn.getBoundingClientRect();
   const containerRect = mobileTabs.getBoundingClientRect();
-  const offsetX = btnRect.left - containerRect.left;
-  const btnWidth = btnRect.width;
   const inset = 6;
-  // Calculate left and width to fit inside the button with inset on both sides
-  tabIndicator.style.left = (offsetX + inset) + 'px';
-  tabIndicator.style.width = (btnWidth - inset * 2) + 'px';
+  tabIndicator.style.left  = (btnRect.left - containerRect.left + inset) + 'px';
+  tabIndicator.style.width = (btnRect.width - inset * 2) + 'px';
 }
 
 if (mobileTabs) {
-  // 初始化：点歌 tab 默认激活
   const defaultBtn = mobileTabs.querySelector('.tab-btn[data-tab="center-col"]') as HTMLButtonElement;
   if (defaultBtn) {
     mobileTabs.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -259,23 +259,16 @@ if (mobileTabs) {
   document.getElementById('center-col')?.classList.add('tab-active');
 
   mobileTabs.addEventListener('click', (e) => {
-    const btn = (e.target as HTMLElement).closest('.tab-btn') as HTMLButtonElement;
-    if (!btn) return;
-    const tab = btn.dataset.tab;
-    if (!tab) return;
-
-    // Update active state on tab buttons
+    const btn = (e.target as HTMLElement).closest('.tab-btn') as HTMLButtonElement | null;
+    if (!btn?.dataset.tab) return;
     mobileTabs.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     moveIndicator(btn);
-
-    // Toggle columns
     document.querySelectorAll('#center-col, #right-col').forEach(col => {
-      col.classList.toggle('tab-active', col.id === tab);
+      col.classList.toggle('tab-active', col.id === btn.dataset.tab);
     });
   });
 
-  // 修正 tab 指示器位置（窗口缩放时）
   let resizeTimer: number;
   window.addEventListener('resize', () => {
     clearTimeout(resizeTimer);

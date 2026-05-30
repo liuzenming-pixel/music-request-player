@@ -2,74 +2,170 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>播放器</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+  <title>点歌台</title>
   <link rel="stylesheet" href="/src/style.css">
 </head>
 <body>
-  <!-- 暗色叠加层 (背景偏白时加深) -->
-  <div id="dim-overlay"></div>
   <div id="bg-canvas"></div>
 
-  <div id="login-corner">
-    <span id="login-text" onclick="window.showLogin?.()">未登录</span>
-  </div>
-
   <div id="app">
-    <!-- 左栏 -->
-    <div id="left-col">
-      <div class="spacer t"></div>
-      <div id="content-wrap">
-        <div id="cover-section">
-          <img id="cover-img" src="" alt="cover">
+
+    <!-- ══ Player Panel ══ -->
+    <div id="player-panel">
+
+      <!-- Cover art -->
+      <div id="cover-wrap" class="paused">
+        <img id="cover-img" src="" alt="">
+      </div>
+
+      <!-- Song info + like + ··· menu -->
+      <div id="info-row">
+        <div id="song-meta">
+          <div id="song-title">—</div>
+          <div id="artist-name">—</div>
         </div>
-        <div id="below-section">
-          <div id="song-title">等待播放</div>
-          <div id="artist-name"></div>
-          <div id="progress-bar">
-            <button id="like-btn" class="like-btn" title="喜欢">♡</button>
-            <div id="progress-track">
-              <div id="progress-fill"></div>
-            </div>
-            <div id="time-display">
-              <span id="time-current">00:00</span>
-              <span id="time-total">00:00</span>
-            </div>
-          </div>
-          <div id="buttons">
-            <button id="prev-btn">◁◁</button>
-            <button id="play-btn" class="main-btn">▶</button>
-            <button id="next-btn">▷▷</button>
-          </div>
-          <div id="volume-bar">
-            <span id="vol-icon">♪</span>
-            <div id="volume-track">
-              <div id="volume-fill" style="width:80%"></div>
+        <div id="meta-actions">
+          <button id="like-btn" class="icon-btn" title="收藏">
+            <svg id="heart-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+          </button>
+          <div id="menu-wrap">
+            <button id="menu-btn" class="icon-btn" title="更多">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/>
+              </svg>
+            </button>
+            <div id="menu-dropdown" class="hidden">
+              <button class="menu-item" id="login-menu-btn">登录网易云音乐</button>
+              <div class="menu-item-info hidden" id="login-nick"></div>
             </div>
           </div>
         </div>
       </div>
-      <div class="spacer b"></div>
-    </div>
 
-    <!-- 右栏: 歌词 -->
-    <div id="right-col">
+      <!-- Progress bar -->
+      <div id="progress-wrap">
+        <div id="progress-track">
+          <div id="progress-fill"></div>
+        </div>
+        <div id="time-row">
+          <span id="time-current">0:00</span>
+          <span id="quality-badge">HQ</span>
+          <span id="time-remain">-0:00</span>
+        </div>
+      </div>
+
+      <!-- Playback controls -->
+      <div id="controls">
+        <button id="shuffle-btn" class="ctrl-btn side-ctrl" title="随机播放">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/>
+            <polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/>
+            <line x1="4" y1="4" x2="9" y2="9"/>
+          </svg>
+        </button>
+        <button id="prev-btn" class="ctrl-btn" title="上一首">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <rect x="5" y="5" width="2.5" height="14" rx="1.2"/>
+            <path d="M17.5 5v14l-10-7z"/>
+          </svg>
+        </button>
+        <button id="play-btn" class="ctrl-btn play-main" title="播放/暂停">
+          <svg id="play-svg" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.14v14l11-7-11-7z"/></svg>
+        </button>
+        <button id="next-btn" class="ctrl-btn" title="下一首">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <rect x="16.5" y="5" width="2.5" height="14" rx="1.2"/>
+            <path d="M6.5 5v14l10-7z"/>
+          </svg>
+        </button>
+        <button id="repeat-btn" class="ctrl-btn side-ctrl" title="循环">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+            <polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Volume -->
+      <div id="volume-row">
+        <button id="vol-low-btn" class="vol-icon" title="静音切换">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+          </svg>
+        </button>
+        <div id="volume-track">
+          <div id="volume-fill"></div>
+        </div>
+        <span class="vol-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+          </svg>
+        </span>
+      </div>
+
+      <!-- Bottom bar (narrow screen only) -->
+      <div id="bottom-bar">
+        <button class="bar-btn" title="歌词">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            <line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="13" y2="13"/>
+          </svg>
+        </button>
+        <button class="bar-btn" disabled style="opacity:.3;cursor:default" title="AirPlay">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12.55a11 11 0 0 1 14.08 0"/>
+            <path d="M1.42 9a16 16 0 0 1 21.16 0"/>
+            <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
+            <circle cx="12" cy="20" r="1" fill="currentColor" stroke="none"/>
+          </svg>
+        </button>
+        <button class="bar-btn" id="queue-narrow-btn" title="播放列表">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+            <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+    </div><!-- /player-panel -->
+
+    <!-- ══ Lyrics Panel (wide screen only) ══ -->
+    <div id="lyrics-panel">
       <div id="lyric-container"></div>
+      <!-- Bottom-right overlay buttons -->
+      <div id="wide-actions">
+        <button class="bar-btn active" id="lyrics-wide-btn" title="歌词">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            <line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="13" y2="13"/>
+          </svg>
+        </button>
+        <button class="bar-btn" id="queue-wide-btn" title="播放列表">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+            <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+      </div>
     </div>
-  </div>
 
-  <!-- 登录弹窗 -->
-  <div id="login-modal" class="hidden" onclick="if(event.target===this)window.closeLogin?.()">
-    <div id="login-modal-content">
-      <span id="login-close" onclick="window.closeLogin?.()">&times;</span>
-      <h2>登录</h2>
-      <p>扫码获取 320kbps 音质</p>
-      <div id="qr-code"><img id="qr-img"></div>
+  </div><!-- /app -->
+
+  <!-- Login Modal -->
+  <div id="login-modal" class="hidden">
+    <div id="login-modal-box">
+      <button id="login-close" onclick="window.closeLogin()">✕</button>
+      <h2>登录网易云音乐</h2>
+      <p>使用手机 App 扫码登录</p>
+      <div id="qr-code"><img id="qr-img" src="" alt="二维码"></div>
       <p id="qr-tip">打开网易云 App 扫码</p>
-      <div id="login-success" class="hidden">
+      <div id="login-success">
         <span>✓</span>
         <p>登录成功</p>
-        <button onclick="window.closeLogin?.()">关闭</button>
+        <button onclick="window.closeLogin()">关闭</button>
       </div>
     </div>
   </div>
