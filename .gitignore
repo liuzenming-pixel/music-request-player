@@ -3,3 +3,6 @@ dist
 .vite
 *.tar.gz
 *.tar
+
+# 后端 / Node API 各自是独立组件(独立 git 仓库 / 第三方),不纳入本仓库
+services/

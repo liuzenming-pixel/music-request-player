@@ -2,63 +2,25 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Commands
+This repo is a **monorepo / workspace** for the 在线点歌台 ("online song-request") system. See `README.md` for the full picture and run instructions.
 
-```bash
-pnpm dev        # start dev server (proxies /api → http://39.105.51.114:5123)
-pnpm build      # production build → dist/
-pnpm preview    # preview the production build locally
-```
+## Layout
 
-No test runner or linter is configured.
+| 路径 | 组件 | 说明 |
+|------|------|------|
+| `frontend/` | **前端·点歌页** | Vite + 原生 TS,单入口(`request.html`)。开发约定见 `frontend/CLAUDE.md` |
+| `services/backend/` | **② Flask 后端**(端口 5123) | 队列/收藏/登录 + `/api/*`;serves `/play`(React 页)和 `/request`。细节见 `services/backend/CLAUDE.md` |
+| `services/api-server/` | **③ Node 网易云 API**(端口 3000) | 第三方 NeteaseCloudMusicApi,数据源 |
 
-## Architecture
+数据流:浏览器 → ② Flask(`/api/*`)→ ③ Node API → 网易云。
 
-This is a **vanilla TypeScript + Vite** project — no framework (no React/Vue). It has two separate pages built as a multi-entry Vite app:
+## 当前保留的两个页面
 
-| Page | HTML | TS | CSS | Purpose |
-|------|------|----|-----|---------|
-| Player | `index.html` | `src/main.ts` | `src/style.css` | Music playback, lyrics, login |
-| Request | `request.html` | `src/request.ts` | `src/request.css` | Song search & queue management |
+- **`/play`** — 大屏播放器,React Apple-Music UI(`services/backend/templates/player.html`,esm.sh 免打包,不依赖前端打包产物)。
+- **`/request`** — 手机点歌页(`frontend/` 的打包产物)。
 
-### Player page (`src/main.ts`)
+## 跨组件的关键约定
 
-- Renders an `<audio>` element, playback controls, progress/volume bars, and cover art.
-- Uses **`@applemusic-like-lyrics/core`** (`LyricPlayer`) for animated Apple-Music-style lyrics. The lyrics player must be driven every frame via `requestAnimationFrame` → `lyricPlayer.setCurrentTime()` + `lyricPlayer.update()`.
-- Uses **`BackgroundRender` (PixiJS)** for a fluid animated background derived from the album cover (`bgRender.setAlbum(url)`).
-- On startup, fetches `/api/queue/next` to get the first song, then calls `/api/song/url` for the playback URL if not already included.
-- `markPlayed(id)` must be POSTed before loading the next song so the backend advances the queue.
-- NetEase QR-code login flow: `getQR()` → polls `/api/login/qr/check` every 2 s → on success code 803, calls `updateLoginStatus()`.
-
-### Request page (`src/request.ts`)
-
-- Three-column layout (hot search sidebar, search center, queue right panel) that collapses to a two-tab mobile layout (`#mobile-tabs`) at `< 720 px`.
-- Queue is polled from `/api/queue` every 5 seconds. Queue actions (add/remove/move-to-top) call the backend then immediately re-poll.
-- Search history is persisted in `localStorage` under key `reqSearchHist` (max 10 entries).
-
-### Backend API (proxy)
-
-All `/api/*` calls are proxied to the backend in dev (`vite.config.ts`). Key endpoints:
-
-- `GET  /api/queue/next` — next queued song (includes `playUrl` when available)
-- `POST /api/queue/mark-played` — `{ id }` — advance queue
-- `GET  /api/queue` — full queue state (`data.requests[]`)
-- `POST /api/queue/add` — `{ id, name, artist, picUrl }`
-- `POST /api/queue/remove` — `{ id }`
-- `POST /api/queue/move` — `{ id, direction: 'top' }`
-- `GET  /api/song/url?id=&level=excellent` — playback URL
-- `GET  /api/lyric?id=` — LRC + translation lyrics
-- `GET  /api/search?keyword=&limit=` — song search
-- `GET  /api/search/hot` — hot search terms
-- `GET  /api/login/qr/key` / `/api/login/qr/create` / `/api/login/qr/check`
-- `GET  /api/login/status`
-- `POST /api/song/like` — `{ id, like: boolean }`
-- `GET  /api/song/like/check?id=`
-
-### Inline event handlers
-
-Because there is no framework, many event handlers in dynamically generated HTML strings are attached via `window.*` assignments (e.g., `window.addToQueue`, `window.moveTop`, `window.showLogin`). When adding new interactive elements to generated HTML, follow this pattern.
-
-### HTML escaping
-
-The `esc(s)` helper (defined in both source files) must be used whenever user-supplied or API-returned strings are interpolated into HTML template literals, to prevent XSS.
+- **前端改动要重新部署**:`frontend/` 的源码改完后,`cd frontend && pnpm build`,再把 `frontend/dist/*` 覆盖进 `services/backend/player-dist/`。后端 `/request` 实时读盘,换文件后无需重启;`/play` 改了 `templates/player.html` 需重启 Flask(Jinja 缓存)。
+- **`services/` 是独立组件**(各自 git 仓库 / 第三方),已在根 `.gitignore` 排除,不纳入本仓库。
+- 本机本地运行的环境细节(Python 路径、启动命令、杀进程坑)见记忆 `local-run-setup`。
